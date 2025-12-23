@@ -16,7 +16,85 @@ const PORT = 3001;
 app.use(cors());
 app.use(express.json());
 
-// --- System Stats Endpoint --
+// --- Database Paths ---
+const DATA_DIR = path.join(__dirname, 'data');
+const CARDS_FILE = path.join(DATA_DIR, 'cards.json');
+const LOCALES_DIR = path.join(__dirname, 'locales');
+
+// Ensure data dir exists
+if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR);
+if (!fs.existsSync(CARDS_FILE)) fs.writeFileSync(CARDS_FILE, JSON.stringify([]));
+
+// --- Cards API ---
+app.get('/api/cards', (req, res) => {
+    try {
+        const data = fs.readFileSync(CARDS_FILE, 'utf-8');
+        res.json(JSON.parse(data));
+    } catch (e) {
+        res.json([]);
+    }
+});
+
+app.post('/api/cards', (req, res) => {
+    try {
+        const newCard = req.body;
+        const data = JSON.parse(fs.readFileSync(CARDS_FILE, 'utf-8'));
+
+        // Auto-increment ID
+        const maxId = data.reduce((max, c) => Math.max(max, c.id || 0), 0);
+        const cardWithId = { ...newCard, id: maxId + 1 };
+
+        data.push(cardWithId);
+        fs.writeFileSync(CARDS_FILE, JSON.stringify(data, null, 2));
+
+        res.json(cardWithId);
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: "Failed to save card" });
+    }
+});
+
+app.delete('/api/cards/:id', (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        let data = JSON.parse(fs.readFileSync(CARDS_FILE, 'utf-8'));
+        data = data.filter(c => c.id !== id);
+        fs.writeFileSync(CARDS_FILE, JSON.stringify(data, null, 2));
+        res.json({ success: true });
+    } catch (e) {
+        res.status(500).json({ error: "Failed to delete card" });
+    }
+});
+
+// --- Locales API ---
+app.get('/api/locales', (req, res) => {
+    try {
+        if (!fs.existsSync(LOCALES_DIR)) return res.json([]);
+        const files = fs.readdirSync(LOCALES_DIR).filter(f => f.endsWith('.json'));
+        const locales = files.map(f => ({
+            id: f.replace('.json', ''),
+            name: f.replace('.json', '').toUpperCase() // Simple name derived from code
+        }));
+        res.json(locales);
+    } catch (e) {
+        res.status(500).json({ error: "Failed to list locales" });
+    }
+});
+
+app.get('/api/locales/:lang', (req, res) => {
+    try {
+        const lang = req.params.lang;
+        const filePath = path.join(LOCALES_DIR, `${lang}.json`);
+        if (fs.existsSync(filePath)) {
+            const data = fs.readFileSync(filePath, 'utf-8');
+            res.json(JSON.parse(data));
+        } else {
+            res.status(404).json({ error: "Locale not found" });
+        }
+    } catch (e) {
+        res.status(500).json({ error: "Failed to load locale" });
+    }
+});
 app.get('/api/system', async (req, res) => {
     try {
         const [cpu, mem, load] = await Promise.all([
@@ -125,11 +203,39 @@ app.get('/api/metadata', async (req, res) => {
         }
 
         if (source === "youtube") {
+            const videoId = cleanUrl.match(/(?:v=|youtu\.be\/)([^&]+)/)?.[1];
+            const apiKey = req.query.key;
+
+            // Try Google YouTube API if key provided
+            if (apiKey && videoId) {
+                try {
+                    console.log(`Using YouTube API for video: ${videoId}`);
+                    const ytRes = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${apiKey}`);
+                    const ytData = await ytRes.json();
+
+                    if (ytData.items && ytData.items.length > 0) {
+                        const snippet = ytData.items[0].snippet;
+                        const bestImage = snippet.thumbnails?.maxres?.url || snippet.thumbnails?.high?.url || snippet.thumbnails?.default?.url;
+
+                        return res.json({
+                            title: snippet.title,
+                            description: snippet.description,
+                            thumbnail: bestImage,
+                            images: [bestImage],
+                            source: "youtube",
+                            tags: snippet.tags || []
+                        });
+                    }
+                } catch (e) {
+                    console.error("YouTube API request failed, falling back to noembed", e);
+                }
+            }
+
+            // Fallback (NoEmbed)
             const response = await fetch(`https://noembed.com/embed?url=${cleanUrl}`);
             const data = await response.json();
             if (data.title) {
                 let thumb = data.thumbnail_url;
-                const videoId = cleanUrl.match(/(?:v=|youtu\.be\/)([^&]+)/)?.[1];
                 if (videoId) thumb = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
 
                 return res.json({
@@ -158,6 +264,19 @@ app.get('/api/metadata', async (req, res) => {
         const description = getMeta('og:description') || getMeta('description') || "No description available";
         const image = getMeta('og:image') || getMeta('twitter:image');
 
+        // Extract Keywords/Tags
+        let extractedTags = [];
+        const keywords = getMeta('keywords');
+        if (keywords) {
+            extractedTags = keywords.split(',').map(k => k.trim());
+        }
+        $('meta[property="article:tag"]').each((i, el) => {
+            const tag = $(el).attr('content');
+            if (tag) extractedTags.push(tag);
+        });
+
+        extractedTags = [...new Set(extractedTags)];
+
         // Handle relative URLs for images
         let absoluteImage = image;
         if (image && !image.startsWith('http')) {
@@ -171,7 +290,8 @@ app.get('/api/metadata', async (req, res) => {
             description: description,
             thumbnail: absoluteImage || "",
             images: absoluteImage ? [absoluteImage] : [],
-            source: "web"
+            source: "web",
+            tags: extractedTags
         });
 
     } catch (error) {

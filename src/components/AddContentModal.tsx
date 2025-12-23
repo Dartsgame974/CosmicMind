@@ -4,6 +4,7 @@ import { CosmicButton } from "./CosmicButton";
 import { X, Globe, Link as LinkIcon, Image as ImageIcon, Loader2 } from "lucide-react";
 import { fetchMetadata, type Metadata } from "../lib/metadata";
 import { useToast } from "./ToastContext";
+import { useSettings } from "../hooks/useSettings";
 
 interface AddContentModalProps {
     isOpen: boolean;
@@ -17,6 +18,7 @@ export function AddContentModal({ isOpen, onClose, onAdd }: AddContentModalProps
     const [metadata, setMetadata] = useState<Metadata | null>(null);
     const [personalNote, setPersonalNote] = useState("");
     const toast = useToast();
+    const { settings } = useSettings();
 
     // Debounce fetch
     useEffect(() => {
@@ -33,7 +35,8 @@ export function AddContentModal({ isOpen, onClose, onAdd }: AddContentModalProps
         if (!url) return;
         setIsLoading(true);
         try {
-            const data = await fetchMetadata(url);
+            const apiKey = settings.enableYoutubeMetadata ? settings.youtubeApiKey : undefined;
+            const data = await fetchMetadata(url, apiKey);
             setMetadata(data);
         } catch (e) {
             console.error(e);
@@ -45,6 +48,12 @@ export function AddContentModal({ isOpen, onClose, onAdd }: AddContentModalProps
     const handleConfirm = () => {
         if (!metadata) return;
 
+        const combinedTags = Array.from(new Set([
+            ...((metadata as any).tags || []),
+            metadata.source,
+            "new"
+        ]));
+
         onAdd({
             title: metadata.title,
             description: metadata.description,
@@ -52,7 +61,7 @@ export function AddContentModal({ isOpen, onClose, onAdd }: AddContentModalProps
             source: metadata.source,
             url: url, // Save the actual URL
             images: metadata.images,
-            tags: [metadata.source, "new"], // Auto-tagging with source
+            tags: combinedTags,
             date: new Date(),
             note: personalNote
         });

@@ -1,0 +1,57 @@
+{
+    "sidebar": {
+        "dashboard": "Tableau de Bord",
+        "cards": "Contenus",
+        "settings": "Paramètres"
+    },
+    "dashboard": {
+        "welcome": "Bon retour, Commandant",
+        "subtitle": "Système opérationnel. Tous les capteurs sont actifs.",
+        "initiate_scan": "Lancer le scan",
+        "system_status": "État du système",
+        "cpu_load": "Charge CPU",
+        "memory_usage": "Utilisation Mémoire",
+        "active_models": "Modèles Actifs",
+        "total_cards": "Points de Données",
+        "starred_items": "Favoris",
+        "database_label": "Base de Données",
+        "total_content_items": "Total Éléments",
+        "active": "Actifs",
+        "archived": "Archivés",
+        "system_diagnostics": "Diagnostics Système",
+        "full_report": "Voir Rapport Complet"
+    },
+    "cards": {
+        "header": "Registre de Contenus",
+        "add_content": "Ajouter du Contenu",
+        "select": "Sélectionner",
+        "new_folder": "Nouveau Dossier",
+        "delete": "Supprimer",
+        "search_placeholder": "Rechercher...",
+        "sort": {
+            "label": "Trier par",
+            "newest": "Plus récents",
+            "oldest": "Plus anciens",
+            "az": "Alphabétique (A-Z)",
+            "za": "Alphabétique (Z-A)"
+        }
+    },
+    "settings": {
+        "header": "Configuration du Système",
+        "general": "Général",
+        "language": "Langue",
+        "theme": "Thème d'interface",
+        "localization": "Localisation",
+        "time_format": "Format de l'heure",
+        "date_format": "Format de la date",
+        "system": "Système",
+        "neural_engine": "Moteur Neuronal",
+        "ollama_model": "Modèle Ollama",
+        "notifications": "Notifications",
+        "sound_effects": "Effets Sonores",
+        "ai_model": "Modèle IA",
+        "data_management": "Gestion des Données",
+        "clear_cache": "Vider le cache",
+        "export_config": "Exporter la config"
+    }
+}

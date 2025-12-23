@@ -7,7 +7,7 @@ export interface Metadata {
     source: "twitter" | "youtube" | "web" | "reddit";
 }
 
-export async function fetchMetadata(url: string): Promise<Metadata> {
+export async function fetchMetadata(url: string, apiKey?: string): Promise<Metadata> {
     const cleanUrl = url.trim();
 
     // Detect Source just for initial UI state if needed, but backend confirms it
@@ -18,7 +18,12 @@ export async function fetchMetadata(url: string): Promise<Metadata> {
 
     try {
         console.log("Fetching metadata via backend for:", cleanUrl);
-        const response = await fetch(`http://localhost:3001/api/metadata?url=${encodeURIComponent(cleanUrl)}`);
+        let endpoint = `http://localhost:3001/api/metadata?url=${encodeURIComponent(cleanUrl)}`;
+        if (apiKey) {
+            endpoint += `&key=${encodeURIComponent(apiKey)}`;
+        }
+
+        const response = await fetch(endpoint);
 
         if (!response.ok) {
             console.error("Backend error status:", response.status);
@@ -31,8 +36,9 @@ export async function fetchMetadata(url: string): Promise<Metadata> {
             description: data.description || "",
             thumbnail: data.thumbnail || "",
             images: data.images || [],
-            source: (data.source as any) || source
-        };
+            source: (data.source as any) || source,
+            tags: data.tags || [] // Capture tags from backend
+        } as Metadata; // Cast or update interface
 
     } catch (error) {
         console.error("Metadata fetch failed:", error);
@@ -41,7 +47,8 @@ export async function fetchMetadata(url: string): Promise<Metadata> {
             description: "Could not fetch metadata (Ensure Backend is running: npm start in /server)",
             thumbnail: "",
             images: [],
-            source: source
-        };
+            source: source,
+            tags: []
+        } as Metadata;
     }
 }

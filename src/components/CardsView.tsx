@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ContentCard } from "./ContentCard";
 import { ContentOverlay } from "./ContentOverlay";
 import { InputOverlay } from "./InputOverlay";
@@ -9,8 +9,10 @@ import { CosmicDropdown } from "./CosmicDropdown";
 import { FolderPlus, Trash2, ArrowUpDown, CheckSquare, PlusCircle, Search } from "lucide-react";
 import { cn } from "../lib/utils";
 import { useToast } from "./ToastContext";
+import { useLocale } from "../hooks/useLocale";
 
 export function CardsView() {
+    const { t } = useLocale();
     const [selectedCard, setSelectedCard] = useState<any>(null);
     const [selectionMode, setSelectionMode] = useState(false);
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
@@ -22,17 +24,19 @@ export function CardsView() {
 
     const toast = useToast();
 
-    // Mock Data
-    const [cards, setCards] = useState(Array.from({ length: 12 }).map((_, i) => ({
-        id: i,
-        date: new Date(Date.now() - i * 86400000), // Mock dates
-        thumbnail: `https://picsum.photos/seed/${i + 40}/600/400`,
-        title: i % 3 === 0 ? "Unity Particle System Tutorial - Advanced VFX" : i % 3 === 1 ? "The Future of React Server Components" : "Cyberpunk City Ambience - 10 Hours",
-        description: "Learn how to create stunning visual effects using the Unity Particle System. In this deep dive, we explore force fields, sub-emitters, and custom shaders.",
-        tags: i % 3 === 0 ? ["vfx", "unity", "3d"] : ["tech", "coding", "web"],
-        source: i % 3 === 0 ? "youtube" : "web",
-        images: []
-    })));
+    const [cards, setCards] = useState<any[]>([]);
+
+    useEffect(() => {
+        fetch('http://localhost:3001/api/cards')
+            .then(res => res.json())
+            .then(data => {
+                if (Array.isArray(data)) {
+                    const parsed = data.map((c: any) => ({ ...c, date: new Date(c.date) }));
+                    setCards(parsed);
+                }
+            })
+            .catch(err => console.error("Failed to load cards", err));
+    }, []);
 
     const toggleSelection = (id: number) => {
         setSelectedIds(prev =>
@@ -53,8 +57,11 @@ export function CardsView() {
         }));
     };
 
-    const handleDelete = () => {
+    const handleDelete = async () => {
         if (confirm(`Delete ${selectedIds.length} items?`)) {
+            for (const id of selectedIds) {
+                await fetch(`http://localhost:3001/api/cards/${id}`, { method: 'DELETE' });
+            }
             setCards(prev => prev.filter(c => !selectedIds.includes(c.id)));
             toast.show({
                 title: "Items Deleted",
@@ -66,41 +73,52 @@ export function CardsView() {
         }
     };
 
-    const handleCreateFolder = (name: string) => {
-        const newFolder = {
-            id: Math.max(...cards.map(c => c.id), 0) + 1,
+    const handleCreateFolder = async (name: string) => {
+        const newFolderPayload = {
             title: name,
             description: "Folder / Collection",
-            thumbnail: "", // Will use icon in Card
+            thumbnail: "",
             tags: ["collection"],
             source: "folder",
             date: new Date(),
             images: []
         };
-        setCards(prev => [newFolder as any, ...prev]);
 
-        toast.show({
-            title: "Folder Created",
-            message: `Collection "${name}" has been successfully created.`,
-            type: "success"
-        });
-        setShowFolderInput(false);
+        try {
+            const res = await fetch('http://localhost:3001/api/cards', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newFolderPayload)
+            });
+            const savedFolder = await res.json();
+            savedFolder.date = new Date(savedFolder.date);
+
+            setCards(prev => [savedFolder, ...prev]);
+            toast.show({
+                title: "Folder Created",
+                message: `Collection "${name}" has been successfully created.`,
+                type: "success"
+            });
+            setShowFolderInput(false);
+        } catch (e) {
+            console.error(e);
+        }
     };
 
-    const handleAddCard = (newCard: any) => {
-        const cardWithId = {
-            ...newCard,
-            id: Math.max(...cards.map(c => c.id), 0) + 1,
-            date: new Date()
-        };
-        // Add to beginning
-        setCards(prev => [cardWithId, ...prev]);
+    const handleAddCard = async (newCard: any) => {
+        try {
+            const res = await fetch('http://localhost:3001/api/cards', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newCard)
+            });
+            const savedCard = await res.json();
+            savedCard.date = new Date(savedCard.date);
 
-        // Re-sort if needed, but usually assume newest is shown first or stick to current sort
-        // Simplest is to just add to state, sorting will apply on next render only if we trigger logic, 
-        // but here we just prepend.
-        // If sortOrder is Newest, prepending is correct.
-        // If sortOrder is Oldest, prepending is "wrong" visually until resort, but acceptable for demo.
+            setCards(prev => [savedCard, ...prev]);
+        } catch (e) {
+            console.error(e);
+        }
     };
 
     return (
@@ -111,7 +129,7 @@ export function CardsView() {
                 <div className="mb-8 pl-1 flex flex-col md:flex-row md:items-end justify-between gap-4">
                     <div>
                         <h2 className="text-2xl font-light tracking-tight flex items-center gap-3">
-                            <span className="text-purple-400">Content</span> Registry
+                            <span className="text-purple-400">{t('cards.header')}</span>
                         </h2>
                         <div className="h-px w-full max-w-sm bg-gradient-to-r from-purple-500/50 to-transparent mt-4" />
                     </div>
@@ -121,7 +139,7 @@ export function CardsView() {
 
                         <CosmicButton onClick={() => setShowAddModal(true)} className="text-xs gap-1.5 px-3 bg-white text-black hover:bg-white/90 border-transparent">
                             <PlusCircle className="w-3.5 h-3.5" />
-                            Add Content
+                            {t('cards.add_content')}
                         </CosmicButton>
 
                         <div className="w-px h-4 bg-white/10 mx-1" />
@@ -132,7 +150,7 @@ export function CardsView() {
                                 type="text"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                placeholder="Search..."
+                                placeholder={t('cards.search_placeholder')}
                                 className="h-8 bg-transparent border-none text-xs text-white placeholder:text-white/30 pl-9 pr-3 w-[120px] focus:w-[180px] transition-all outline-none"
                             />
                         </div>
@@ -148,27 +166,27 @@ export function CardsView() {
                             }}
                         >
                             <CheckSquare className="w-3.5 h-3.5" />
-                            Select
+                            {t('cards.select')}
                         </CosmicButton>
 
                         <div className="w-px h-4 bg-white/10 mx-1" />
 
                         <CosmicDropdown
                             icon={ArrowUpDown}
-                            label="Sort By"
+                            label={t('cards.sort.label')}
                             value={sortOrder}
                             onSelect={handleSort}
                             items={[
-                                { label: "Newest First", value: "newest" },
-                                { label: "Oldest First", value: "oldest" },
-                                { label: "Alphabetical (A-Z)", value: "az" },
-                                { label: "Alphabetical (Z-A)", value: "za" },
+                                { label: t('cards.sort.newest'), value: "newest" },
+                                { label: t('cards.sort.oldest'), value: "oldest" },
+                                { label: t('cards.sort.az'), value: "az" },
+                                { label: t('cards.sort.za'), value: "za" },
                             ]}
                         />
 
                         <CosmicButton onClick={() => setShowFolderInput(true)} variant="ghost" className="text-xs gap-1.5 hover:text-green-400">
                             <FolderPlus className="w-3.5 h-3.5" />
-                            New Folder
+                            {t('cards.new_folder')}
                         </CosmicButton>
 
                         {selectedIds.length > 0 && (
@@ -180,7 +198,7 @@ export function CardsView() {
                                     onClick={handleDelete}
                                 >
                                     <Trash2 className="w-3.5 h-3.5" />
-                                    Delete ({selectedIds.length})
+                                    {t('cards.delete')} ({selectedIds.length})
                                 </CosmicButton>
                             </>
                         )}

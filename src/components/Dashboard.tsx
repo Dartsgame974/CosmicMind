@@ -3,8 +3,10 @@ import { GlassPanel } from "./GlassPanel";
 import { CosmicButton } from "./CosmicButton";
 import { ArrowRight, Cpu, Activity, Database, Clock, Star, Play } from "lucide-react";
 import { useSettings } from "../hooks/useSettings";
+import { useLocale } from "../hooks/useLocale";
 
 export function Dashboard() {
+    const { t } = useLocale();
     const [time, setTime] = useState(new Date());
     const [stats, setStats] = useState({ cpu: 0, memory: 0 });
     const { settings } = useSettings();
@@ -49,14 +51,14 @@ export function Dashboard() {
 
                 <div className="relative z-10">
                     <h1 className="text-3xl font-light tracking-tight mb-2">
-                        Welcome back, <span className="text-blue-400 font-medium drop-shadow-[0_0_10px_rgba(59,130,246,0.5)]">Commander</span>
+                        {t('dashboard.welcome')}
                     </h1>
                     <p className="text-white/60 max-w-xl font-light leading-relaxed">
-                        System operational. All sensors are active. The cosmos is waiting for your command.
+                        {t('dashboard.subtitle')}
                     </p>
                     <div className="mt-6 flex gap-4">
-                        <CosmicButton variant="glow" label="Initiate Scan" />
-                        <CosmicButton variant="ghost" label="System Status" />
+                        <CosmicButton variant="glow" label={t('dashboard.initiate_scan')} />
+                        <CosmicButton variant="ghost" label={t('dashboard.system_status')} />
                     </div>
                 </div>
 
@@ -77,13 +79,13 @@ export function Dashboard() {
                     <div className="p-2 rounded-lg bg-blue-500/10 text-blue-400">
                         <Cpu className="w-5 h-5" />
                     </div>
-                    <span className="text-[10px] uppercase tracking-widest text-white/40 font-bold">System Load</span>
+                    <span className="text-[10px] uppercase tracking-widest text-white/40 font-bold">{t('dashboard.cpu_load')}</span>
                 </div>
 
                 <div className="space-y-4">
                     <div className="space-y-2">
                         <div className="flex justify-between text-xs">
-                            <span className="text-white/60">CPU Usage</span>
+                            <span className="text-white/60">{t('dashboard.cpu_load')}</span>
                             <span className="text-blue-400">{stats.cpu}%</span>
                         </div>
                         <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
@@ -92,7 +94,7 @@ export function Dashboard() {
                     </div>
                     <div className="space-y-2">
                         <div className="flex justify-between text-xs">
-                            <span className="text-white/60">Memory Usage</span>
+                            <span className="text-white/60">{t('dashboard.memory_usage')}</span>
                             <span className="text-purple-400">{stats.memory}%</span>
                         </div>
                         <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
@@ -108,17 +110,17 @@ export function Dashboard() {
                     <div className="p-2 rounded-lg bg-green-500/10 text-green-400">
                         <Database className="w-5 h-5" />
                     </div>
-                    <span className="text-[10px] uppercase tracking-widest text-white/40 font-bold">Database</span>
+                    <span className="text-[10px] uppercase tracking-widest text-white/40 font-bold">{t('dashboard.database_label')}</span>
                 </div>
 
                 <div className="mt-2">
                     <div className="text-4xl font-light tracking-tighter text-white">124</div>
-                    <div className="text-white/40 text-xs mt-1">Total Content Items</div>
+                    <div className="text-white/40 text-xs mt-1">{t('dashboard.total_content_items')}</div>
                 </div>
 
                 <div className="mt-auto pt-4 border-t border-white/5 flex gap-4 text-xs text-white/50">
-                    <div><span className="text-green-400 font-bold">84</span> Active</div>
-                    <div><span className="text-white/30 font-bold">40</span> Archived</div>
+                    <div><span className="text-green-400 font-bold">84</span> {t('dashboard.active')}</div>
+                    <div><span className="text-white/30 font-bold">40</span> {t('dashboard.archived')}</div>
                 </div>
             </GlassPanel >
 
@@ -128,7 +130,7 @@ export function Dashboard() {
                     <div className="p-2 rounded-lg bg-yellow-500/10 text-yellow-400">
                         <Star className="w-5 h-5" />
                     </div>
-                    <span className="text-[10px] uppercase tracking-widest text-white/40 font-bold">Starred Items</span>
+                    <span className="text-[10px] uppercase tracking-widest text-white/40 font-bold">{t('dashboard.starred_items')}</span>
                 </div>
 
                 <div className="space-y-3 mt-1 z-10">
@@ -159,14 +161,14 @@ export function Dashboard() {
                             <Activity className="w-5 h-5" />
                         </div>
                         <div>
-                            <h3 className="text-sm font-medium text-white">System Diagnostics</h3>
+                            <h3 className="text-sm font-medium text-white">{t('dashboard.system_diagnostics')}</h3>
                             <p className="text-xs text-white/40">All subsystems operating within normal parameters.</p>
                         </div>
                     </div>
 
                     {/* Fixed Padding Button */}
                     <CosmicButton variant="ghost" className="gap-2 text-xs hover:bg-white/5 px-4 py-2">
-                        View Full Report <ArrowRight className="w-3 h-3" />
+                        {t('dashboard.full_report')} <ArrowRight className="w-3 h-3" />
                     </CosmicButton>
                 </div>
             </GlassPanel >

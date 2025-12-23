@@ -1,0 +1,57 @@
+{
+    "sidebar": {
+        "dashboard": "Dashboard",
+        "cards": "Cards",
+        "settings": "Settings"
+    },
+    "dashboard": {
+        "welcome": "Welcome back, Commander",
+        "subtitle": "System operational. All sensors are active.",
+        "initiate_scan": "Initiate Scan",
+        "system_status": "System Status",
+        "cpu_load": "CPU Load",
+        "memory_usage": "Memory Usage",
+        "active_models": "Active Models",
+        "total_cards": "Total Data Points",
+        "starred_items": "Starred Items",
+        "database_label": "Database",
+        "total_content_items": "Total Content Items",
+        "active": "Active",
+        "archived": "Archived",
+        "system_diagnostics": "System Diagnostics",
+        "full_report": "View Full Report"
+    },
+    "cards": {
+        "header": "Content Registry",
+        "add_content": "Add Content",
+        "select": "Select",
+        "new_folder": "New Folder",
+        "delete": "Delete",
+        "search_placeholder": "Search...",
+        "sort": {
+            "label": "Sort By",
+            "newest": "Newest First",
+            "oldest": "Oldest First",
+            "az": "Alphabetical (A-Z)",
+            "za": "Alphabetical (Z-A)"
+        }
+    },
+    "settings": {
+        "header": "System Configuration",
+        "general": "General",
+        "language": "Language",
+        "theme": "Interface Theme",
+        "localization": "Localization",
+        "time_format": "Time Format",
+        "date_format": "Date Format",
+        "system": "System",
+        "neural_engine": "Neural Engine",
+        "ollama_model": "Ollama Model",
+        "notifications": "Notifications",
+        "sound_effects": "Sound Effects",
+        "ai_model": "AI Model",
+        "data_management": "Data Management",
+        "clear_cache": "Clear App Cache",
+        "export_config": "Export Configuration"
+    }
+}
