@@ -15,6 +15,7 @@ export function AddContentModal({ isOpen, onClose, onAdd }: AddContentModalProps
     const [url, setUrl] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [metadata, setMetadata] = useState<Metadata | null>(null);
+    const [personalNote, setPersonalNote] = useState("");
     const toast = useToast();
 
     // Debounce fetch
@@ -49,9 +50,11 @@ export function AddContentModal({ isOpen, onClose, onAdd }: AddContentModalProps
             description: metadata.description,
             thumbnail: metadata.thumbnail || `https://picsum.photos/seed/${Date.now()}/600/400`,
             source: metadata.source,
-            images: metadata.images, // Storing extra images
-            tags: ["new"], // Default tag
-            date: new Date()
+            url: url, // Save the actual URL
+            images: metadata.images,
+            tags: [metadata.source, "new"], // Auto-tagging with source
+            date: new Date(),
+            note: personalNote
         });
 
         toast.show({
@@ -66,6 +69,7 @@ export function AddContentModal({ isOpen, onClose, onAdd }: AddContentModalProps
     const handleClose = () => {
         setUrl("");
         setMetadata(null);
+        setPersonalNote(""); // Reset note
         onClose();
     };
 
@@ -147,6 +151,19 @@ export function AddContentModal({ isOpen, onClose, onAdd }: AddContentModalProps
                                         {metadata.source}
                                     </div>
                                 </div>
+                            </div>
+                        )}
+
+                        {/* Personal Note */}
+                        {metadata && (
+                            <div className="animate-fade-in border-t border-white/5 pt-4 mt-2">
+                                <label className="text-xs text-white/50 uppercase tracking-wider font-semibold mb-2 block">Personal Note (Optional)</label>
+                                <textarea
+                                    value={personalNote}
+                                    onChange={(e) => setPersonalNote(e.target.value)}
+                                    placeholder="Add your own context, thoughts, or reminders about this content..."
+                                    className="w-full bg-black/40 border border-white/10 rounded-lg p-3 text-sm text-white/80 placeholder:text-white/20 focus:outline-none focus:border-green-500/30 focus:ring-1 focus:ring-green-500/20 transition-all min-h-[80px] resize-none"
+                                />
                             </div>
                         )}
                     </div>

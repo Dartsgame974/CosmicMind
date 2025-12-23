@@ -12,7 +12,9 @@ interface ContentOverlayProps {
         thumbnail: string;
         tags: string[];
         source: string;
+        url?: string;
         images?: string[];
+        note?: string;
     } | null;
 }
 
@@ -167,12 +169,25 @@ export function ContentOverlay({ isOpen, onClose, data }: ContentOverlayProps) {
 
                                 <p className="text-white/70 leading-relaxed text-lg font-light">
                                     {data.description}
-                                    {" "}{data.description}{" "}{data.description} {/* Mocking longer text */}
                                 </p>
 
+                                {data.note && (
+                                    <div className="mt-6 p-6 rounded-xl bg-yellow-500/5 border border-yellow-500/20 text-yellow-100/80">
+                                        <div className="text-xs uppercase tracking-widest font-bold mb-2 flex items-center gap-2 text-yellow-400/70">
+                                            <span>Personal Note</span>
+                                        </div>
+                                        <p className="text-sm italic leading-relaxed whitespace-pre-wrap">
+                                            "{data.note}"
+                                        </p>
+                                    </div>
+                                )}
+
                                 <div className="mt-auto pt-6 flex gap-4">
-                                    <CosmicButton variant="glow" label="Access Content" />
-                                    <CosmicButton variant="ghost" label="Share Frequency" />
+                                    <CosmicButton
+                                        variant="glow"
+                                        label="Access Content"
+                                        onClick={() => data.url ? window.open(data.url, '_blank') : alert("No URL available for this item.")}
+                                    />
                                 </div>
                             </div>
 

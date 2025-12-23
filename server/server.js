@@ -5,6 +5,7 @@ import si from 'systeminformation';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import * as cheerio from 'cheerio';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -141,12 +142,35 @@ app.get('/api/metadata', async (req, res) => {
             }
         }
 
-        // Generic / Fallback
+        // Generic Web Scraping (Cheerio)
+        const response = await fetch(cleanUrl, {
+            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36' }
+        });
+        const html = await response.text();
+        const $ = cheerio.load(html);
+
+        const getMeta = (name) => {
+            return $(`meta[property="${name}"]`).attr('content') ||
+                $(`meta[name="${name}"]`).attr('content') || '';
+        };
+
+        const title = getMeta('og:title') || $('title').text() || cleanUrl;
+        const description = getMeta('og:description') || getMeta('description') || "No description available";
+        const image = getMeta('og:image') || getMeta('twitter:image');
+
+        // Handle relative URLs for images
+        let absoluteImage = image;
+        if (image && !image.startsWith('http')) {
+            try {
+                absoluteImage = new URL(image, cleanUrl).href;
+            } catch (e) { }
+        }
+
         return res.json({
-            title: cleanUrl,
-            description: "No metadata available (Generic Web)",
-            thumbnail: "",
-            images: [],
+            title: title,
+            description: description,
+            thumbnail: absoluteImage || "",
+            images: absoluteImage ? [absoluteImage] : [],
             source: "web"
         });
 

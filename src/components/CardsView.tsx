@@ -6,7 +6,7 @@ import { AddContentModal } from "./AddContentModal";
 import { GlassPanel } from "./GlassPanel";
 import { CosmicButton } from "./CosmicButton";
 import { CosmicDropdown } from "./CosmicDropdown";
-import { FolderPlus, Trash2, ArrowUpDown, CheckSquare, PlusCircle } from "lucide-react";
+import { FolderPlus, Trash2, ArrowUpDown, CheckSquare, PlusCircle, Search } from "lucide-react";
 import { cn } from "../lib/utils";
 import { useToast } from "./ToastContext";
 
@@ -17,6 +17,8 @@ export function CardsView() {
     const [sortOrder, setSortOrder] = useState<"newest" | "oldest" | "az" | "za">("newest");
     const [showFolderInput, setShowFolderInput] = useState(false);
     const [showAddModal, setShowAddModal] = useState(false);
+    const [searchQuery, setSearchQuery] = useState("");
+
 
     const toast = useToast();
 
@@ -117,10 +119,23 @@ export function CardsView() {
                     {/* Toolbar */}
                     <GlassPanel intensity="low" className="p-1 flex items-center gap-1 rounded-xl bg-black/40 border-white/5 relative z-50">
 
-                        <CosmicButton onClick={() => setShowAddModal(true)} variant="glow" className="text-xs gap-1.5 px-3">
+                        <CosmicButton onClick={() => setShowAddModal(true)} className="text-xs gap-1.5 px-3 bg-white text-black hover:bg-white/90 border-transparent">
                             <PlusCircle className="w-3.5 h-3.5" />
                             Add Content
                         </CosmicButton>
+
+                        <div className="w-px h-4 bg-white/10 mx-1" />
+
+                        <div className="relative group">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/40 group-focus-within:text-blue-400 transition-colors" />
+                            <input
+                                type="text"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                placeholder="Search..."
+                                className="h-8 bg-transparent border-none text-xs text-white placeholder:text-white/30 pl-9 pr-3 w-[120px] focus:w-[180px] transition-all outline-none"
+                            />
+                        </div>
 
                         <div className="w-px h-4 bg-white/10 mx-1" />
 
@@ -174,7 +189,12 @@ export function CardsView() {
 
                 {/* Content Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 relative z-0">
-                    {cards.map((card) => (
+                    {cards.filter(card => {
+                        const query = searchQuery.toLowerCase();
+                        return card.title.toLowerCase().includes(query) ||
+                            card.description.toLowerCase().includes(query) ||
+                            card.tags.some(tag => tag.toLowerCase().includes(query));
+                    }).map((card) => (
                         <ContentCard
                             key={card.id}
                             title={card.title}
