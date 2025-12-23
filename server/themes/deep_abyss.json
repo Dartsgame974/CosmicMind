@@ -1,0 +1,9 @@
+{
+    "name": "Deep Abyss",
+    "colors": {
+        "primary": "#0ea5e9",
+        "secondary": "#10b981",
+        "background": "#020617",
+        "surface": "rgba(2, 6, 23, 0.4)"
+    }
+}

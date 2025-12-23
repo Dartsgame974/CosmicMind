@@ -12,6 +12,7 @@ interface ContentOverlayProps {
         thumbnail: string;
         tags: string[];
         source: string;
+        images?: string[];
     } | null;
 }
 
@@ -25,12 +26,8 @@ export function ContentOverlay({ isOpen, onClose, data }: ContentOverlayProps) {
 
     if (!isOpen || !data) return null;
 
-    // Mock carousel images (using the thumbnail + variations)
-    const carouselImages = [
-        data.thumbnail,
-        `https://picsum.photos/seed/${data.title}1/1200/600`,
-        `https://picsum.photos/seed/${data.title}2/1200/600`,
-    ];
+    // Use data images or fallback to thumbnail
+    const carouselImages = (data.images && data.images.length > 0) ? data.images : [data.thumbnail];
 
     const nextImage = () => setCurrentImage((prev) => (prev + 1) % carouselImages.length);
     const prevImage = () => setCurrentImage((prev) => (prev - 1 + carouselImages.length) % carouselImages.length);

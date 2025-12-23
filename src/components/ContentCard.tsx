@@ -1,6 +1,6 @@
 import { GlassPanel } from "./GlassPanel";
 import { CosmicButton } from "./CosmicButton";
-import { Play, ExternalLink, Heart, CheckCircle2, Circle } from "lucide-react";
+import { Play, ExternalLink, Heart, CheckCircle2, Circle, Folder } from "lucide-react";
 import { cn } from "../lib/utils";
 
 interface ContentCardProps {
@@ -8,7 +8,7 @@ interface ContentCardProps {
     description: string;
     thumbnail: string;
     tags: string[];
-    source?: "youtube" | "web" | "twitter";
+    source?: "youtube" | "web" | "twitter" | "folder";
     onClick?: () => void;
     selectable?: boolean;
     isSelected?: boolean;
@@ -37,13 +37,22 @@ export function ContentCard({
             onClick={!selectable ? onClick : undefined}
         >
             {/* Thumbnail Container */}
-            <div className="relative aspect-video w-full overflow-hidden">
-                <img
-                    src={thumbnail}
-                    alt={title}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
+            <div className="relative aspect-video w-full overflow-hidden bg-white/5 flex items-center justify-center">
+                {source === "folder" ? (
+                    <div className="flex items-center justify-center w-full h-full bg-blue-500/10 text-blue-400 group-hover:text-blue-300 group-hover:bg-blue-500/20 transition-colors">
+                        <Folder className="w-16 h-16 drop-shadow-[0_0_15px_rgba(59,130,246,0.3)]" />
+                    </div>
+                ) : (
+                    <img
+                        src={thumbnail}
+                        alt={title}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                )}
+
+                {source !== "folder" && (
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
+                )}
 
                 {/* Selection Overlay or Play Button */}
                 {selectable ? (
@@ -61,13 +70,15 @@ export function ContentCard({
                         )}
                     </div>
                 ) : (
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/20 backdrop-blur-[2px]">
-                        <CosmicButton
-                            variant="icon"
-                            icon={Play}
-                            className="w-12 h-12 bg-white/10 hover:bg-blue-500 hover:text-white border-white/20 hover:scale-110 shadow-[0_0_20px_rgba(0,0,0,0.5)]"
-                        />
-                    </div>
+                    source !== "folder" && (
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/20 backdrop-blur-[2px]">
+                            <CosmicButton
+                                variant="icon"
+                                icon={Play}
+                                className="w-12 h-12 bg-white/10 hover:bg-blue-500 hover:text-white border-white/20 hover:scale-110 shadow-[0_0_20px_rgba(0,0,0,0.5)]"
+                            />
+                        </div>
+                    )
                 )}
 
                 {/* Top Right Badges */}
@@ -101,7 +112,7 @@ export function ContentCard({
                     {!selectable && (
                         <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity -translate-x-2 group-hover:translate-x-0 duration-300">
                             <CosmicButton variant="icon" icon={Heart} className="w-6 h-6 hover:text-red-400" />
-                            <CosmicButton variant="icon" icon={ExternalLink} className="w-6 h-6 hover:text-blue-400" />
+                            {source !== "folder" && <CosmicButton variant="icon" icon={ExternalLink} className="w-6 h-6 hover:text-blue-400" />}
                         </div>
                     )}
                 </div>

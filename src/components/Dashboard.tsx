@@ -2,13 +2,36 @@ import { useState, useEffect } from "react";
 import { GlassPanel } from "./GlassPanel";
 import { CosmicButton } from "./CosmicButton";
 import { ArrowRight, Cpu, Activity, Database, Clock, Star, Play } from "lucide-react";
+import { useSettings } from "../hooks/useSettings";
 
 export function Dashboard() {
     const [time, setTime] = useState(new Date());
+    const [stats, setStats] = useState({ cpu: 0, memory: 0 });
+    const { settings } = useSettings();
 
     useEffect(() => {
         const timer = setInterval(() => setTime(new Date()), 1000);
         return () => clearInterval(timer);
+    }, []);
+
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                const res = await fetch("http://localhost:3001/api/system");
+                const data = await res.json();
+                if (data.cpu) {
+                    const totalMem = data.memory.total;
+                    const usedMem = data.memory.used;
+                    const memPercent = Math.round((usedMem / totalMem) * 100);
+                    setStats({ cpu: data.cpu.load, memory: memPercent });
+                }
+            } catch (e) {
+                console.error("Stats fetch error", e);
+            }
+        };
+        fetchStats();
+        const interval = setInterval(fetchStats, 2000);
+        return () => clearInterval(interval);
     }, []);
 
     const mockFavorites = [
@@ -39,17 +62,17 @@ export function Dashboard() {
 
                 <div className="flex flex-col items-end text-right relative z-10">
                     <div className="text-5xl font-extralight tracking-tighter tabular-nums text-white/90">
-                        {time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </div>
+                        {time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: settings.timeFormat === '12h' })}
+                    </div >
                     <div className="text-white/40 text-sm uppercase tracking-widest font-medium mt-1 flex items-center gap-2">
                         <Clock className="w-3 h-3" />
                         {time.toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'long' })}
                     </div>
-                </div>
-            </GlassPanel>
+                </div >
+            </GlassPanel >
 
             {/* System Stats (CPU/GPU) */}
-            <GlassPanel className="p-6 flex flex-col gap-6 hover:border-blue-500/30 transition-colors group">
+            < GlassPanel className="p-6 flex flex-col gap-6 hover:border-blue-500/30 transition-colors group" >
                 <div className="flex justify-between items-start">
                     <div className="p-2 rounded-lg bg-blue-500/10 text-blue-400">
                         <Cpu className="w-5 h-5" />
@@ -61,26 +84,26 @@ export function Dashboard() {
                     <div className="space-y-2">
                         <div className="flex justify-between text-xs">
                             <span className="text-white/60">CPU Usage</span>
-                            <span className="text-blue-400">32%</span>
+                            <span className="text-blue-400">{stats.cpu}%</span>
                         </div>
                         <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-                            <div className="h-full bg-blue-500/60 w-[32%] shadow-[0_0_10px_rgba(59,130,246,0.4)]" />
+                            <div className="h-full bg-blue-500/60 shadow-[0_0_10px_rgba(59,130,246,0.4)] transition-all duration-500" style={{ width: `${stats.cpu}%` }} />
                         </div>
                     </div>
                     <div className="space-y-2">
                         <div className="flex justify-between text-xs">
-                            <span className="text-white/60">GPU Load</span>
-                            <span className="text-purple-400">78%</span>
+                            <span className="text-white/60">Memory Usage</span>
+                            <span className="text-purple-400">{stats.memory}%</span>
                         </div>
                         <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-                            <div className="h-full bg-purple-500/60 w-[78%] shadow-[0_0_10px_rgba(168,85,247,0.4)]" />
+                            <div className="h-full bg-purple-500/60 shadow-[0_0_10px_rgba(168,85,247,0.4)] transition-all duration-500" style={{ width: `${stats.memory}%` }} />
                         </div>
                     </div>
                 </div>
-            </GlassPanel>
+            </GlassPanel >
 
             {/* Database Stats */}
-            <GlassPanel className="p-6 flex flex-col gap-4 hover:border-green-500/30 transition-colors group">
+            < GlassPanel className="p-6 flex flex-col gap-4 hover:border-green-500/30 transition-colors group" >
                 <div className="flex justify-between items-start">
                     <div className="p-2 rounded-lg bg-green-500/10 text-green-400">
                         <Database className="w-5 h-5" />
@@ -97,10 +120,10 @@ export function Dashboard() {
                     <div><span className="text-green-400 font-bold">84</span> Active</div>
                     <div><span className="text-white/30 font-bold">40</span> Archived</div>
                 </div>
-            </GlassPanel>
+            </GlassPanel >
 
             {/* Recent Favorites -> Starred Items */}
-            <GlassPanel className="p-6 flex flex-col gap-4 hover:border-yellow-500/30 transition-colors group relative overflow-hidden">
+            < GlassPanel className="p-6 flex flex-col gap-4 hover:border-yellow-500/30 transition-colors group relative overflow-hidden" >
                 <div className="flex justify-between items-start z-10">
                     <div className="p-2 rounded-lg bg-yellow-500/10 text-yellow-400">
                         <Star className="w-5 h-5" />
@@ -126,10 +149,10 @@ export function Dashboard() {
 
                 {/* Decorative background glow */}
                 <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-yellow-500/5 blur-[50px] pointer-events-none" />
-            </GlassPanel>
+            </GlassPanel >
 
             {/* Energy/Details (Refined Padding) */}
-            <GlassPanel className="p-6 flex flex-col gap-4 hover:border-red-500/30 transition-colors cursor-pointer group col-span-1 md:col-span-2 lg:col-span-3">
+            < GlassPanel className="p-6 flex flex-col gap-4 hover:border-red-500/30 transition-colors cursor-pointer group col-span-1 md:col-span-2 lg:col-span-3" >
                 <div className="flex justify-between items-center">
                     <div className="flex items-center gap-3">
                         <div className="p-2 rounded-lg bg-red-500/10 text-red-400">
@@ -146,8 +169,8 @@ export function Dashboard() {
                         View Full Report <ArrowRight className="w-3 h-3" />
                     </CosmicButton>
                 </div>
-            </GlassPanel>
+            </GlassPanel >
 
-        </div>
+        </div >
     );
 }

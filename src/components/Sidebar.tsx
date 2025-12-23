@@ -1,4 +1,4 @@
-import { Home, Compass, LayoutGrid, Settings, Activity } from "lucide-react";
+import { Home, LayoutGrid, Settings } from "lucide-react";
 import { CosmicButton } from "./CosmicButton";
 import { GlassPanel } from "./GlassPanel";
 
@@ -9,10 +9,8 @@ interface SidebarProps {
 
 export function Sidebar({ currentView, onNavigate }: SidebarProps) {
     const navItems = [
-        { icon: Home, label: "Home", id: "dashboard" },
-        { icon: Compass, label: "Explore", id: "cards" },
-        { icon: LayoutGrid, label: "Apps", id: "apps" },
-        { icon: Activity, label: "Activity", id: "activity" },
+        { icon: Home, label: "Dashboard", id: "dashboard" },
+        { icon: LayoutGrid, label: "Cards", id: "cards" },
         { icon: Settings, label: "Settings", id: "settings" },
     ];
 

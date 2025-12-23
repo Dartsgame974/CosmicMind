@@ -1,0 +1,9 @@
+{
+    "name": "Cosmic Dark",
+    "colors": {
+        "primary": "#3b82f6",
+        "secondary": "#a855f7",
+        "background": "#000000",
+        "surface": "rgba(0, 0, 0, 0.4)"
+    }
+}
